@@ -591,7 +591,7 @@ pub mod pallet {
 				max_weight,
 				max_weight,
 			);
-			let result = Ok(Some(outcome.weight_used().saturating_add(100_000_000)).into());
+			let result = todo!();
 			Self::deposit_event(Event::Attempted(outcome));
 			result
 		}

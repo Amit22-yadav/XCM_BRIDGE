@@ -22,6 +22,7 @@ use super::{
 	AccountId, AllPalletsWithSystem, Balances, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
 	WithRialtoMessagesInstance, WithRialtoParachainMessagesInstance, XcmPallet,
 };
+use xcm_builder::MintLocation;
 use bp_messages::LaneId;
 use bp_millau::WeightToFee;
 use bp_rialto_parachain::RIALTO_PARACHAIN_ID;
@@ -61,7 +62,7 @@ parameter_types! {
 	/// Since Kusama is a top-level relay-chain with its own consensus, it's just our network ID.
 	pub UniversalLocation: InteriorMultiLocation = ThisNetwork::get().into();
 	/// The check account, which holds any native assets that have been teleported out and not back in (yet).
-	pub CheckAccount: AccountId = XcmPallet::check_account();
+	pub CheckAccount: (AccountId, MintLocation) = (XcmPallet::check_account(), MintLocation::Local);
 }
 
 /// The canonical means of converting a `MultiLocation` into an `AccountId`, used when we want to
@@ -153,24 +154,24 @@ impl xcm_executor::Config for XcmConfig {
 	type OriginConverter = LocalOriginConverter;
 	type IsReserve = ();
 	type IsTeleporter = TrustedTeleporters;
-	// type UniversalLocation = UniversalLocation;
+	 type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
 	type Weigher = XcmWeigher;
 	// The weight trader piggybacks on the existing transaction-fee conversion logic.
 	type Trader = UsingComponents<WeightToFee, TokenLocation, AccountId, Balances, ()>;
 	type ResponseHandler = XcmPallet;
 	type AssetTrap = XcmPallet;
-	// type AssetLocker = ();
-	// type AssetExchanger = ();
+	type AssetLocker = ();
+	 type AssetExchanger = ();
 	type AssetClaims = XcmPallet;
 	type SubscriptionService = XcmPallet;
-	// type PalletInstancesInfo = AllPalletsWithSystem;
-	// type MaxAssetsIntoHolding = ConstU32<64>;
-	// type FeeManager = ();
-	// type MessageExporter = ();
-	// type UniversalAliases = Nothing;
-	// type CallDispatcher = RuntimeCall;
-	// type SafeCallFilter = Everything;
+	type PalletInstancesInfo = AllPalletsWithSystem;
+	type MaxAssetsIntoHolding = ConstU32<64>;
+	type FeeManager = ();
+	type MessageExporter = ();
+	type UniversalAliases = Nothing;
+	type CallDispatcher = RuntimeCall;
+	type SafeCallFilter = Everything;
 }
 
 /// Type to convert an `Origin` type value into a `MultiLocation` value which represents an interior
@@ -204,20 +205,20 @@ impl pallet_xcm::Config for Runtime {
 	// transfer.
 	type XcmReserveTransferFilter = Everything;
 	type Weigher = XcmWeigher;
-	// type UniversalLocation = UniversalLocation;
+	type UniversalLocation = UniversalLocation;
 	type RuntimeOrigin = RuntimeOrigin;
 	type RuntimeCall = RuntimeCall;
 	const VERSION_DISCOVERY_QUEUE_SIZE: u32 = 100;
 	type AdvertisedXcmVersion = pallet_xcm::CurrentXcmVersion;
-	// type Currency = Balances;
-	// type CurrencyMatcher = ();
-	// type TrustedLockers = ();
-	// type SovereignAccountOf = SovereignAccountOf;
-	// type MaxLockers = frame_support::traits::ConstU32<8>;
-	// type WeightInfo = pallet_xcm::TestWeightInfo;
+	type Currency = Balances;
+	type CurrencyMatcher = ();
+	type TrustedLockers = ();
+	type SovereignAccountOf = SovereignAccountOf;
+	type MaxLockers = frame_support::traits::ConstU32<8>;
+	type WeightInfo = pallet_xcm::TestWeightInfo;
 	#[cfg(feature = "runtime-benchmarks")]
 	type ReachableDest = ReachableDest;
-	// type AdminOrigin = EnsureRoot<AccountId>;
+	 type AdminOrigin = EnsureRoot<AccountId>;
 }
 
 /// With-Rialto bridge.
@@ -259,7 +260,7 @@ impl XcmBridge for ToRialtoParachainBridge {
 	}
 
 	fn verify_destination(dest: &MultiLocation) -> bool {
-		matches!(*dest, MultiLocation { parents: 1, interior: X2(PalletInstance(r), Parachain(RIALTO_PARACHAIN_ID)) } if r == RialtoNetwork::get())
+		matches!(*dest, MultiLocation { parents: 1, interior: X2(GlobalConsensus(r), Parachain(RIALTO_PARACHAIN_ID)) } if r == RialtoNetwork::get())
 	}
 
 	fn build_destination() -> MultiLocation {
