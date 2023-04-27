@@ -306,10 +306,15 @@ pub fn run() -> Result<()> {
 				info!("Parachain genesis state: {}", genesis_state);
 				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
-				crate::service::start_node(config, polkadot_config, collator_options, id)
-					.await
-					.map(|r| r.0)
-					.map_err(Into::into)
+				todo!()
+
+				// crate::service::start_node(config, polkadot_config, collator_options, id)
+				// 	.await
+				// 	.map(|r| r.0)
+				// // 	.map_err(Into::into)
+				// crate::service{
+				// 	(todo!())
+				// }
 			})
 		},
 	}

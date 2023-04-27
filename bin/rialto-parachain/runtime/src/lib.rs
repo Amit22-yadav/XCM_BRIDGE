@@ -229,7 +229,7 @@ impl frame_system::Config for Runtime {
 	/// This is used as an identifier of the chain. 42 is the generic substrate prefix.
 	type SS58Prefix = SS58Prefix;
 	/// The action to take on a Runtime Upgrade
-	type OnSetCode = cumulus_pallet_parachain_system::ParachainSetCode<Self>;
+	type OnSetCode =();
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
@@ -290,17 +290,17 @@ parameter_types! {
 	pub const ReservedDmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
 }
 
-impl cumulus_pallet_parachain_system::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type OnSystemEvent = ();
-	type SelfParaId = parachain_info::Pallet<Runtime>;
-	type OutboundXcmpMessageSource = XcmpQueue;
-	type DmpMessageHandler = DmpQueue;
-	type ReservedDmpWeight = ReservedDmpWeight;
-	type XcmpMessageHandler = XcmpQueue;
-	type ReservedXcmpWeight = ReservedXcmpWeight;
-	type CheckAssociatedRelayNumber = AnyRelayNumber;
-}
+// impl cumulus_pallet_parachain_system::Config for Runtime {
+// 	type RuntimeEvent = RuntimeEvent;
+// 	type OnSystemEvent = ();
+// 	type SelfParaId = parachain_info::Pallet<Runtime>;
+// 	type OutboundXcmpMessageSource = XcmpQueue;
+// 	type DmpMessageHandler = DmpQueue;
+// 	type ReservedDmpWeight = ReservedDmpWeight;
+// 	type XcmpMessageHandler = XcmpQueue;
+// 	type ReservedXcmpWeight = ReservedXcmpWeight;
+// 	type CheckAssociatedRelayNumber = AnyRelayNumber;
+// }
 
 impl parachain_info::Config for Runtime {}
 
@@ -311,7 +311,7 @@ impl cumulus_pallet_aura_ext::Config for Runtime {}
 parameter_types! {
 	pub const RelayLocation: MultiLocation = MultiLocation::parent();
 	pub const RelayNetwork: NetworkId = CustomNetworkId::Rialto.as_network_id();
-	pub RelayOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
+	// pub RelayOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into_location();
 	pub UniversalLocation: InteriorMultiLocation = X1(Parachain(ParachainInfo::parachain_id().into()));
 	/// The Millau network ID.
 	pub const MillauNetwork: NetworkId = CustomNetworkId::Millau.as_network_id();
@@ -348,26 +348,26 @@ pub type LocalAssetTransactor = CurrencyAdapter<
 /// This is the type we use to convert an (incoming) XCM origin into a local `Origin` instance,
 /// ready for dispatching a transaction with XCM `Transact`. There is an `OriginKind` which can
 /// biases the kind of local `Origin` it will become.
-pub type XcmOriginToTransactDispatchOrigin = (
-	// Sovereign account converter; this attempts to derive an `AccountId` from the origin location
-	// using `LocationToAccountId` and then turn that into the usual `Signed` origin. Useful for
-	// foreign chains who want to have a local sovereign account on this chain which they control.
-	SovereignSignedViaLocation<LocationToAccountId, RuntimeOrigin>,
-	// Native converter for Relay-chain (Parent) location; will converts to a `Relay` origin when
-	// recognised.
-	RelayChainAsNative<RelayOrigin, RuntimeOrigin>,
-	// Native converter for sibling Parachains; will convert to a `SiblingPara` origin when
-	// recognised.
-	SiblingParachainAsNative<cumulus_pallet_xcm::Origin, RuntimeOrigin>,
-	// Superuser converter for the Relay-chain (Parent) location. This will allow it to issue a
-	// transaction from the Root origin.
-	ParentAsSuperuser<RuntimeOrigin>,
-	// Native signed account converter; this just converts an `AccountId32` origin into a normal
-	// `Origin::Signed` origin of the same 32-byte value.
-	SignedAccountId32AsNative<RelayNetwork, RuntimeOrigin>,
-	// Xcm origins can be represented natively under the Xcm pallet's Xcm origin.
-	XcmPassthrough<RuntimeOrigin>,
-);
+// pub type XcmOriginToTransactDispatchOrigin = (
+// 	// Sovereign account converter; this attempts to derive an `AccountId` from the origin location
+// 	// using `LocationToAccountId` and then turn that into the usual `Signed` origin. Useful for
+// 	// foreign chains who want to have a local sovereign account on this chain which they control.
+// 	SovereignSignedViaLocation<LocationToAccountId, RuntimeOrigin>,
+// 	// Native converter for Relay-chain (Parent) location; will converts to a `Relay` origin when
+// 	// recognised.
+// 	RelayChainAsNative<RelayOrigin, RuntimeOrigin>,
+// 	// Native converter for sibling Parachains; will convert to a `SiblingPara` origin when
+// 	// recognised.
+// 	SiblingParachainAsNative<cumulus_pallet_xcm::Origin, RuntimeOrigin>,
+// 	// Superuser converter for the Relay-chain (Parent) location. This will allow it to issue a
+// 	// transaction from the Root origin.
+// 	ParentAsSuperuser<RuntimeOrigin>,
+// 	// Native signed account converter; this just converts an `AccountId32` origin into a normal
+// 	// `Origin::Signed` origin of the same 32-byte value.
+// 	SignedAccountId32AsNative<RelayNetwork, RuntimeOrigin>,
+// 	// Xcm origins can be represented natively under the Xcm pallet's Xcm origin.
+// 	XcmPassthrough<RuntimeOrigin>,
+// );
 
 // TODO: until https://github.com/paritytech/parity-bridges-common/issues/1417 is fixed (in either way),
 // the following constant must match the similar constant in the Millau runtime.
@@ -404,7 +404,7 @@ impl Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
 	type XcmSender = XcmRouter;
 	type AssetTransactor = LocalAssetTransactor;
-	type OriginConverter = XcmOriginToTransactDispatchOrigin;
+	type OriginConverter = ();
 	type IsReserve = NativeAsset;
 	type IsTeleporter = NativeAsset; // <- should be enough to allow teleportation of UNIT
 	type UniversalLocation = UniversalLocation;
@@ -493,28 +493,28 @@ impl pallet_xcm::Config for Runtime {
 	type AdminOrigin = frame_system::EnsureRoot<AccountId>;
 }
 
-impl cumulus_pallet_xcm::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-}
+// impl cumulus_pallet_xcm::Config for Runtime {
+// 	type RuntimeEvent = RuntimeEvent;
+// 	type XcmExecutor = XcmExecutor<XcmConfig>;
+// }
 
-impl cumulus_pallet_xcmp_queue::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type ChannelInfo = ParachainSystem;
-	type VersionWrapper = ();
-	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
-	type ControllerOrigin = EnsureRoot<AccountId>;
-	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
-	type WeightInfo = ();
-	type PriceForSiblingDelivery = ();
-}
+// impl cumulus_pallet_xcmp_queue::Config for Runtime {
+// 	type RuntimeEvent = RuntimeEvent;
+// 	type XcmExecutor = XcmExecutor<XcmConfig>;
+// 	type ChannelInfo = ParachainSystem;
+// 	type VersionWrapper = ();
+// 	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
+// 	type ControllerOrigin = EnsureRoot<AccountId>;
+// 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
+// 	type WeightInfo = ();
+// 	type PriceForSiblingDelivery = ();
+// }
 
-impl cumulus_pallet_dmp_queue::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type ExecuteOverweightOrigin = frame_system::EnsureRoot<AccountId>;
-}
+// impl cumulus_pallet_dmp_queue::Config for Runtime {
+// 	type RuntimeEvent = RuntimeEvent;
+// 	type XcmExecutor = XcmExecutor<XcmConfig>;
+// 	type ExecuteOverweightOrigin = frame_system::EnsureRoot<AccountId>;
+// }
 
 impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
@@ -596,7 +596,7 @@ construct_runtime!(
 		// RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage},
 		TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Event<T>},
 
-		ParachainSystem: cumulus_pallet_parachain_system::{Pallet, Call, Storage, Inherent, Event<T>} = 20,
+		// ParachainSystem: cumulus_pallet_parachain_system::{Pallet, Call, Storage, Inherent, Event<T>} = 20,
 		ParachainInfo: parachain_info::{Pallet, Storage, Config} = 21,
 
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 30,
@@ -605,10 +605,10 @@ construct_runtime!(
 		AuraExt: cumulus_pallet_aura_ext::{Pallet, Config},
 
 		// XCM helpers.
-		XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 50,
+		// XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 50,
 		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin} = 51,
-		CumulusXcm: cumulus_pallet_xcm::{Pallet, Call, Event<T>, Origin} = 52,
-		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 53,
+		// CumulusXcm: cumulus_pallet_xcm::{Pallet, Call, Event<T>, Origin} = 52,
+		// DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 53,
 
 		// Millau bridge modules.
 		BridgeRelayers: pallet_bridge_relayers::{Pallet, Call, Storage, Event<T>},
@@ -706,38 +706,39 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl cumulus_primitives_core::CollectCollationInfo<Block> for Runtime {
-		fn collect_collation_info(header: &<Block as BlockT>::Header) -> cumulus_primitives_core::CollationInfo {
-			ParachainSystem::collect_collation_info(header)
-		}
-	}
+	// impl cumulus_primitives_core::CollectCollationInfo<Block> for Runtime {
+	// 	fn collect_collation_info(header: &<Block as BlockT>::Header) -> cumulus_primitives_core::CollationInfo {
+	// 		// ParachainSystem::collect_collation_info(header)
+	// 	}
+	// }
 
-	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Index> for Runtime {
-		fn account_nonce(account: AccountId) -> Index {
-			System::account_nonce(account)
-		}
-	}
+	// impl frame_system_rpc_runtime_api::runtime_decl_for_account_nonce_api::AccountNonceApi<Block, AccountId, Index> for Runtime {
+	// 	// fn account_nonce(account: AccountId) -> Index {
+	// 	// 	System::account_nonce(account)
+	// 	// }
+	// 	fn account_nonce(_: AccountId) -> Index { todo!() }
+	// }
 
-	impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance> for Runtime {
-		fn query_info(
-			uxt: <Block as BlockT>::Extrinsic,
-			len: u32,
-		) -> pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo<Balance> {
-			TransactionPayment::query_info(uxt, len)
-		}
-		fn query_fee_details(
-			uxt: <Block as BlockT>::Extrinsic,
-			len: u32,
-		) -> pallet_transaction_payment::FeeDetails<Balance> {
-			TransactionPayment::query_fee_details(uxt, len)
-		}
-		fn query_weight_to_fee(weight: Weight) -> Balance {
-			TransactionPayment::weight_to_fee(weight)
-		}
-		fn query_length_to_fee(length: u32) -> Balance {
-			TransactionPayment::length_to_fee(length)
-		}
-	}
+	// impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance> for Runtime {
+	// 	fn query_info(
+	// 		uxt: <Block as BlockT>::Extrinsic,
+	// 		len: u32,
+	// 	) -> pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo<Balance> {
+	// 		TransactionPayment::query_info(uxt, len)
+	// 	}
+	// 	fn query_fee_details(
+	// 		uxt: <Block as BlockT>::Extrinsic,
+	// 		len: u32,
+	// 	) -> pallet_transaction_payment::FeeDetails<Balance> {
+	// 		TransactionPayment::query_fee_details(uxt, len)
+	// 	}
+	// 	fn query_weight_to_fee(weight: Weight) -> Balance {
+	// 		TransactionPayment::weight_to_fee(weight)
+	// 	}
+	// 	fn query_length_to_fee(length: u32) -> Balance {
+	// 		TransactionPayment::length_to_fee(length)
+	// 	}
+	// }
 
 	impl bp_millau::MillauFinalityApi<Block> for Runtime {
 		fn best_finalized() -> Option<HeaderId<bp_millau::Hash, bp_millau::BlockNumber>> {
@@ -835,11 +836,11 @@ impl cumulus_pallet_parachain_system::CheckInherents<Block> for CheckInherents {
 	}
 }
 
-cumulus_pallet_parachain_system::register_validate_block!(
-	Runtime = Runtime,
-	BlockExecutor = cumulus_pallet_aura_ext::BlockExecutor::<Runtime, Executive>,
-	CheckInherents = CheckInherents,
-);
+// cumulus_pallet_parachain_system::register_validate_block!(
+// 	Runtime = Runtime,
+// 	BlockExecutor = cumulus_pallet_aura_ext::BlockExecutor::<Runtime, Executive>,
+// 	CheckInherents = CheckInherents,
+// );
 
 #[cfg(test)]
 mod tests {

@@ -420,95 +420,95 @@ pub fn parachain_build_import_queue(
 	.map_err(Into::into)
 }
 
-/// Start a normal parachain node.
-pub async fn start_node(
-	parachain_config: Configuration,
-	polkadot_config: Configuration,
-	collator_options: CollatorOptions,
-	id: ParaId,
-) -> sc_service::error::Result<(TaskManager, Arc<ParachainClient<RuntimeApi>>)> {
-	start_node_impl::<RuntimeApi, _, _, _>(
-		parachain_config,
-		polkadot_config,
-		collator_options,
-		id,
-		|_deny_unsafe, client, pool| {
-			use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
-			use sc_rpc::DenyUnsafe;
-			use substrate_frame_rpc_system::{System, SystemApiServer};
+// /// Start a normal parachain node.
+// pub async fn start_node(
+// 	parachain_config: Configuration,
+// 	polkadot_config: Configuration,
+// 	collator_options: CollatorOptions,
+// 	id: ParaId,
+// ) -> sc_service::error::Result<(TaskManager, Arc<ParachainClient<RuntimeApi>>)> {
+// 	// start_node_impl::<RuntimeApi, _, _, _>(
+// 	// 	parachain_config,
+// 	// 	polkadot_config,
+// 	// 	collator_options,
+// 	// 	id,
+// 	// 	|_deny_unsafe, client, pool| {
+// 	// 		// use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
+// 	// 		// use sc_rpc::DenyUnsafe;
+// 	// 		// use substrate_frame_rpc_system::{System, SystemApiServer};
 
-			let mut io = jsonrpsee::RpcModule::new(());
-			let map_err = |e| sc_service::Error::Other(format!("{e}"));
-			io.merge(System::new(client.clone(), pool, DenyUnsafe::No).into_rpc())
-				.map_err(map_err)?;
-			io.merge(TransactionPayment::new(client).into_rpc()).map_err(map_err)?;
-			Ok(io)
-		},
-		parachain_build_import_queue,
-		|client,
-		 block_import,
-		 prometheus_registry,
-		 telemetry,
-		 task_manager,
-		 relay_chain_interface,
-		 transaction_pool,
-		 sync_oracle,
-		 keystore,
-		 force_authoring| {
-			let client2 = client.clone();
-			let block_import2 = block_import;
-			let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client)?;
+// 	// 		let mut io = jsonrpsee::RpcModule::new(());
+// 	// 		let map_err = |e| sc_service::Error::Other(format!("{e}"));
+// 	// 		// io.merge(System::new(client.clone(), pool, DenyUnsafe::No).into_rpc())
+// 	// 			//.map_err(map_err)?;
+// 	// 		// io.merge(TransactionPayment::new(client).into_rpc()).map_err(map_err)?;
+// 	// 		Ok(io)
+// 	// 	},
+// 	// 	parachain_build_import_queue,
+// 	// 	|client,
+// 	// 	 block_import,
+// 	// 	 prometheus_registry,
+// 	// 	 telemetry,
+// 	// 	 task_manager,
+// 	// 	 relay_chain_interface,
+// 	// 	 transaction_pool,
+// 	// 	 sync_oracle,
+// 	// 	 keystore,
+// 	// 	 force_authoring| {
+// 	// 		let client2 = client.clone();
+// 	// 		let block_import2 = block_import;
+// 	// 		let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client)?;
 
-			let proposer_factory = sc_basic_authorship::ProposerFactory::with_proof_recording(
-				task_manager.spawn_handle(),
-				client,
-				transaction_pool,
-				prometheus_registry,
-				telemetry.clone(),
-			);
+// 	// 		let proposer_factory = sc_basic_authorship::ProposerFactory::with_proof_recording(
+// 	// 			task_manager.spawn_handle(),
+// 	// 			client,
+// 	// 			transaction_pool,
+// 	// 			prometheus_registry,
+// 	// 			telemetry.clone(),
+// 	// 		);
 
-			Ok(AuraConsensus::build::<sp_consensus_aura::sr25519::AuthorityPair, _, _, _, _, _, _>(
-				BuildAuraConsensusParams {
-					proposer_factory,
-					create_inherent_data_providers: move |_, (relay_parent, validation_data)| {
-						let relay_chain_interface = relay_chain_interface.clone();
-						async move {
-							let parachain_inherent =
-						cumulus_primitives_parachain_inherent::ParachainInherentData::create_at(
-							relay_parent,
-							&relay_chain_interface,
-							&validation_data,
-							id,
-						).await;
-							let time = sp_timestamp::InherentDataProvider::from_system_time();
+// 	// 		Ok(AuraConsensus::build::<sp_consensus_aura::sr25519::AuthorityPair, _, _, _, _, _, _>(
+// 	// 			BuildAuraConsensusParams {
+// 	// 				proposer_factory,
+// 	// 				create_inherent_data_providers: move |_, (relay_parent, validation_data)| {
+// 	// 					let relay_chain_interface = relay_chain_interface.clone();
+// 	// 					async move {
+// 	// 						let parachain_inherent =
+// 	// 					cumulus_primitives_parachain_inherent::ParachainInherentData::create_at(
+// 	// 						relay_parent,
+// 	// 						&relay_chain_interface,
+// 	// 						&validation_data,
+// 	// 						id,
+// 	// 					).await;
+// 	// 						let time = sp_timestamp::InherentDataProvider::from_system_time();
 
-							let slot = sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
-							*time,
-							slot_duration,
-						);
+// 	// 						let slot = sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
+// 	// 						*time,
+// 	// 						slot_duration,
+// 	// 					);
 
-							let parachain_inherent = parachain_inherent.ok_or_else(|| {
-								Box::<dyn std::error::Error + Send + Sync>::from(
-									"Failed to create parachain inherent",
-								)
-							})?;
-							Ok((slot, time, parachain_inherent))
-						}
-					},
-					block_import: block_import2,
-					para_client: client2,
-					backoff_authoring_blocks: Option::<()>::None,
-					sync_oracle,
-					keystore,
-					force_authoring,
-					slot_duration,
-					// We got around 500ms for proposing
-					block_proposal_slot_portion: SlotProportion::new(1f32 / 24f32),
-					telemetry,
-					max_block_proposal_slot_portion: None,
-				},
-			))
-		},
-	)
-	.await
-}
+// 	// 						let parachain_inherent = parachain_inherent.ok_or_else(|| {
+// 	// 							Box::<dyn std::error::Error + Send + Sync>::from(
+// 	// 								"Failed to create parachain inherent",
+// 	// 							)
+// 	// 						})?;
+// 	// 						Ok((slot, time, parachain_inherent))
+// 	// 					}
+// 	// 				},
+// 	// 				block_import: block_import2,
+// 	// 				para_client: client2,
+// 	// 				backoff_authoring_blocks: Option::<()>::None,
+// 	// 				sync_oracle,
+// 	// 				keystore,
+// 	// 				force_authoring,
+// 	// 				slot_duration,
+// 	// 				// We got around 500ms for proposing
+// 	// 				block_proposal_slot_portion: SlotProportion::new(1f32 / 24f32),
+// 	// 				telemetry,
+// 	// 				max_block_proposal_slot_portion: None,
+// 	// 			},
+// 	// 		))
+// 	// 	},
+// 	// )
+// 	// .await
+// }
