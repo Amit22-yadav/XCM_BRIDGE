@@ -1,14 +1,14 @@
 [package]
 name = "xcm-simulator-fuzzer"
-version = "0.9.32"
-authors = ["Parity Technologies <admin@parity.io>"]
 description = "Examples of xcm-simulator usage."
 edition = "2021"
-
+repository = "https://github.com/paritytech/polkadot.git"
+version = "0.9.41"
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.0.0" }
+codec = { package = "parity-scale-codec", version = "3.4.0" }
 honggfuzz = "0.5.55"
-scale-info = { version = "2.1.2", features = ["derive"] }
+arbitrary = "1.2.0"
+scale-info = { version = "2.5.0", features = ["derive"] }
 
 frame-system = { git = "https://github.com/paritytech/substrate", branch = "master" }
 frame-support = { git = "https://github.com/paritytech/substrate", branch = "master" }
@@ -22,10 +22,17 @@ xcm = { path = "../../" }
 xcm-simulator = { path = "../" }
 xcm-executor = { path = "../../xcm-executor" }
 xcm-builder = { path = "../../xcm-builder" }
-pallet-xcm ={ git = "https://github.com/paritytech/polkadot", default-features = false, branch = "master" }
-polkadot-core-primitives =  { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "master" }
-polkadot-runtime-parachains =  { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "master" }
-polkadot-parachain =  { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "master" }
+pallet-xcm = { path = "../../pallet-xcm" }
+polkadot-core-primitives = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "master" }
+polkadot-runtime-parachains = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "master" }
+polkadot-parachain = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "master" }
+
+[features]
+runtime-benchmarks = [
+    "pallet-xcm/runtime-benchmarks",
+    "xcm-builder/runtime-benchmarks",
+    "frame-support/runtime-benchmarks",
+]
 
 [[bin]]
 path = "src/fuzz.rs"
