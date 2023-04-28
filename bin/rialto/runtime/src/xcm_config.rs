@@ -118,8 +118,8 @@ parameter_types! {
 	pub const Roc: MultiAssetFilter = Wild(AllOf { fun: WildFungible, id: Concrete(TokenLocation::get()) });
 	//pub const Rialto: MultiLocation = GlobalConsensus(ByGenesis([0xf2;0xf7;0xf0;0x28;0xa7;0x59;0xe2;0xe3;0xb9;08dc38fedd28979b006da63e4cf6d923b29cd90e61206a7; 32])).into_location();
 	//pub const Millau: MultiLocation = GlobalConsensus(ByGenesis([u8; 32])).into_location();
-	 pub const Rialto: MultiLocation = PalletInstance(100).into_location();
-	 pub const Millau: MultiLocation = PalletInstance(200).into_location();
+	pub const Rialto: MultiLocation = PalletInstance(100).into_location();
+	pub const Millau: MultiLocation = Parachain(2000).into_location();
 	pub const OurMillau: (MultiAssetFilter, MultiLocation) = (Roc::get(), Millau::get());
 	pub const OurRialto: (MultiAssetFilter, MultiLocation) = (Roc::get(), Rialto::get());
 
@@ -223,7 +223,7 @@ impl XcmBridge for ToMillauBridge {
 	}
 
 	fn verify_destination(dest: &MultiLocation) -> bool {
-		matches!(*dest, MultiLocation { parents: 1, interior: X1(PalletInstance(200)) } )
+		matches!(*dest, MultiLocation { parents: 1, interior: X1(Parachain(2000)) } )
 	}
 
 	fn build_destination() -> MultiLocation {

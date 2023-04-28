@@ -65,6 +65,10 @@ sp-version = { git = "https://github.com/paritytech/substrate", branch = "master
 polkadot-parachain = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "master" }
 cumulus-pallet-xcm = { path="../../../modules/xcm",  default-features = false }
 
+orml-xtokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", branch = "master", default-features = false }
+orml-tokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", branch = "master", default-features = false }
+orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", branch = "master", default-features = false }
+
 # Polkadot Dependencies
 pallet-xcm = { path="../../../xcm/pallet-xcm", default-features = false}
 xcm = { path="../../../xcm", default-features = false}
@@ -89,6 +93,9 @@ std = [
 	"bp-polkadot-core/std",
 	"bp-relayers/std",
 	"bp-rialto/std",
+	"orml-xtokens/std",
+	"orml-tokens/std",
+	"orml-traits/std",
 	"cumulus-pallet-xcm/std",
 	"bp-rialto-parachain/std",
 	"bp-runtime/std",

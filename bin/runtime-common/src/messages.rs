@@ -528,6 +528,7 @@ pub mod target {
 					weight_limit.unwrap_or_else(Weight::zero),
 					weight_credit,
 				);
+				log::trace!("xcm outcome : {xcm_outcome:?}");
 				Ok(xcm_outcome)
 			};
 

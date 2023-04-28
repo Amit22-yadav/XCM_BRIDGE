@@ -93,7 +93,7 @@ impl Alternative {
 		let properties = Some(
 			json!({
 				"tokenDecimals": 9,
-				"tokenSymbol": "RLT"
+				"tokenSymbol": "UNITS"
 			})
 			.as_object()
 			.expect("Map given; qed")
