@@ -58,7 +58,7 @@ polkadot-parachain = { git = "https://github.com/paritytech/polkadot", branch = 
 polkadot-primitives = { git = "https://github.com/paritytech/polkadot", branch = "master" }
 polkadot-runtime-common = { git = "https://github.com/paritytech/polkadot", branch = "master" }
 polkadot-runtime-parachains = { git = "https://github.com/paritytech/polkadot", branch = "master" }
-xcm = { git = "https://github.com/paritytech/polkadot", branch = "master", default-features = false }
+xcm = {path ="../../xcm",default-features = false }
 
 
 [dev-dependencies]

@@ -294,10 +294,10 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type OnSystemEvent = ();
 	type SelfParaId = parachain_info::Pallet<Runtime>;
-	type OutboundXcmpMessageSource = XcmpQueue;
-	type DmpMessageHandler = DmpQueue;
+	type OutboundXcmpMessageSource = ();
+	type DmpMessageHandler = ();
 	type ReservedDmpWeight = ReservedDmpWeight;
-	type XcmpMessageHandler = XcmpQueue;
+	type XcmpMessageHandler = ();
 	type ReservedXcmpWeight = ReservedXcmpWeight;
 	type CheckAssociatedRelayNumber = AnyRelayNumber;
 }
@@ -404,7 +404,7 @@ impl Config for XcmConfig {
 	type RuntimeCall = RuntimeCall;
 	type XcmSender = XcmRouter;
 	type AssetTransactor = LocalAssetTransactor;
-	type OriginConverter = XcmOriginToTransactDispatchOrigin;
+	type OriginConverter = ();
 	type IsReserve = NativeAsset;
 	type IsTeleporter = NativeAsset; // <- should be enough to allow teleportation of UNIT
 	type UniversalLocation = UniversalLocation;
@@ -495,26 +495,26 @@ impl pallet_xcm::Config for Runtime {
 
 impl cumulus_pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
+	type XcmExecutor = ();
 }
 
-impl cumulus_pallet_xcmp_queue::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type ChannelInfo = ParachainSystem;
-	type VersionWrapper = ();
-	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
-	type ControllerOrigin = EnsureRoot<AccountId>;
-	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
-	type WeightInfo = ();
-	type PriceForSiblingDelivery = ();
-}
+// impl cumulus_pallet_xcmp_queue::Config for Runtime {
+// 	type RuntimeEvent = RuntimeEvent;
+// 	type XcmExecutor = XcmExecutor<XcmConfig>;
+// 	type ChannelInfo = ParachainSystem;
+// 	type VersionWrapper = ();
+// 	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
+// 	type ControllerOrigin = EnsureRoot<AccountId>;
+// 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
+// 	type WeightInfo = ();
+// 	type PriceForSiblingDelivery = ();
+// }
 
-impl cumulus_pallet_dmp_queue::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type ExecuteOverweightOrigin = frame_system::EnsureRoot<AccountId>;
-}
+// impl cumulus_pallet_dmp_queue::Config for Runtime {
+// 	type RuntimeEvent = RuntimeEvent;
+// 	type XcmExecutor = XcmExecutor<XcmConfig>;
+// 	type ExecuteOverweightOrigin = frame_system::EnsureRoot<AccountId>;
+// }
 
 impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
@@ -605,10 +605,10 @@ construct_runtime!(
 		AuraExt: cumulus_pallet_aura_ext::{Pallet, Config},
 
 		// XCM helpers.
-		XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 50,
+		// XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 50,
 		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin} = 51,
 		CumulusXcm: cumulus_pallet_xcm::{Pallet, Call, Event<T>, Origin} = 52,
-		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 53,
+		// DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 53,
 
 		// Millau bridge modules.
 		BridgeRelayers: pallet_bridge_relayers::{Pallet, Call, Storage, Event<T>},

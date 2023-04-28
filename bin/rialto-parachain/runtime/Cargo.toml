@@ -70,10 +70,10 @@ parachain-info = { git = "https://github.com/paritytech/cumulus", branch = "mast
 
 # Polkadot Dependencies
 polkadot-parachain = { git = "https://github.com/paritytech/polkadot", branch = "master", default-features = false }
-xcm = { git = "https://github.com/paritytech/polkadot", branch = "master", default-features = false }
-xcm-builder = { git = "https://github.com/paritytech/polkadot", branch = "master", default-features = false }
-xcm-executor = { git = "https://github.com/paritytech/polkadot", branch = "master", default-features = false }
-pallet-xcm = { git = "https://github.com/paritytech/polkadot", branch = "master", default-features = false }
+pallet-xcm = { path="../../../xcm/pallet-xcm", default-features = false}
+xcm = { path="../../../xcm", default-features = false}
+xcm-builder = { path="../../../xcm/xcm-builder", default-features = false}
+xcm-executor = { path="../../../xcm/xcm-executor", default-features = false}
 
 [dev-dependencies]
 bridge-runtime-common = { path = "../../runtime-common", features = ["integrity-test"] }
