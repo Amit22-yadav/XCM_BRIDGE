@@ -22,28 +22,42 @@ use super::{
 	AccountId, AllPalletsWithSystem, Balances, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
 	WithRialtoMessagesInstance, WithRialtoParachainMessagesInstance, XcmPallet,
 };
+use sp_core::Get;
+use xcm::opaque::v2::NetworkId::Any;
+use xcm_primitives::Balance;
+use xcm_executor::XcmExecutor;
 use xcm_builder::MintLocation;
+// use xcm::v2::AssetId;
 use bp_messages::LaneId;
+// use xcm::opaque::v2::Junction::GeneralIndex;
 use bp_millau::WeightToFee;
 use bp_rialto_parachain::RIALTO_PARACHAIN_ID;
 use bridge_runtime_common::{
 	messages::source::{XcmBridge, XcmBridgeAdapter},
 	CustomNetworkId,
 };
+
+use orml_traits::parameter_type_with_key;
 use frame_support::{
 	parameter_types,
 	traits::{ConstU32, Everything, Nothing},
 	weights::Weight,
 };
+use sp_runtime::traits::{AccountIdConversion};
+use bp_westend::Convert;
+use orml_traits::location::AbsoluteReserveProvider;
 use pallet_aura::Pallet;
 use xcm_builder::NativeAsset;
 use xcm::latest::prelude::*;
+use xcm_builder::FixedWeightBounds;
 use xcm_builder::{
 	AccountId32Aliases, AllowKnownQueryResponses, AllowTopLevelPaidExecutionFrom,
 	CurrencyAdapter as XcmCurrencyAdapter, IsConcrete,  SignedAccountId32AsNative,
 	SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit, UsingComponents,
 };
+use crate::ParachainInfo;
 use frame_system::EnsureRoot;
+ use crate::AssetRegistry;
 
 parameter_types! {
 	/// The location of the `MLAU` token, from the context of this chain. Since this token is native to this
@@ -105,6 +119,7 @@ parameter_types! {
 	 pub const Millau: MultiLocation = Parachain(2000).into_location();
 	pub const OurMillau: (MultiAssetFilter, MultiLocation) = (Roc::get(), Millau::get());
 	pub const OurRialto: (MultiAssetFilter, MultiLocation) = (Roc::get(), Rialto::get());
+	pub const MaxAssetsForTransfer: usize = 2;
 
 }
 
@@ -274,6 +289,105 @@ impl XcmBridge for ToRialtoParachainBridge {
 	}
 }
 
+pub struct CurrencyIdConvert;
+use xcm_primitives::constants::chain::CORE_ASSET_ID;
+
+impl Convert< xcm_primitives::AssetId, Option<xcm::v3::MultiLocation>> for CurrencyIdConvert {
+	fn convert(id: xcm_primitives::AssetId) -> Option<xcm::v3::MultiLocation> {
+		match id {
+			CORE_ASSET_ID => Some(xcm::v3::MultiLocation::new(
+				1,
+				X2(Parachain(ParachainInfo::get().into()), GeneralIndex(id.into())),
+			)),
+			_ => {
+				if let Some(loc) = AssetRegistry::asset_to_location(id) {
+					Some(loc.0)
+				} else {
+					None
+				}
+			}
+		}
+	}
+}
+
+impl <T> bp_westend::Convert<xcm::v3::MultiLocation, T> for CurrencyIdConvert{
+	fn convert(a: xcm::v3::MultiLocation) -> T {
+		todo!()
+	}
+}
+impl Convert<MultiAsset, Option<AssetId>> for CurrencyIdConvert {
+	fn convert(asset: MultiAsset) -> Option<AssetId> {
+		if let MultiAsset {
+			id: Concrete(location), ..
+		} = asset
+		{
+			Self::convert(location)
+		} else {
+			None
+		}
+	}
+}
+impl bp_westend::Convert<AssetId,MultiLocation> for CurrencyIdConvert{
+
+
+	fn convert(a: AssetId) -> MultiLocation {
+		todo!()
+	}
+
+}
+
+
+// parameter_types! {
+// 	/// The amount of weight an XCM operation takes. This is a safe overestimate.
+// 	pub const BaseXcmWeight: Weight = 100_000_000;
+// 	pub const MaxInstructions: u32 = 100;
+// 	pub const MaxAssetsForTransfer: usize = 2;
+// }
+
+parameter_type_with_key! {
+	pub ParachainMinFee: |_location: MultiLocation| -> Option<u128> {
+		None
+	};
+}
+
+pub struct AccountIdToMultiLocation;
+impl Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
+	fn convert(account: AccountId) -> MultiLocation {
+		X1(AccountId32 {
+			network: Any.into(),
+			id: account.into(),
+		})
+		.into()
+	}
+}
+
+
+parameter_types! {
+	pub SelfLocation: MultiLocation = MultiLocation::new(1, X1(PalletInstance(ParachainInfo::get().into())));
+}
+
+// impl bp_westend::Convert<u32, Option<xcm::v3::MultiLocation>> for CurrencyIdConvert{
+// 	fn convert(a: u32) -> Option<xcm::v3::MultiLocation> {
+// 		todo!()
+// 	}
+// }
+
+impl orml_xtokens::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = Balance;
+	type CurrencyId = xcm_primitives::AssetId;
+	type CurrencyIdConvert = CurrencyIdConvert;
+	type AccountIdToMultiLocation = AccountIdToMultiLocation;
+	type SelfLocation = SelfLocation;
+	type XcmExecutor = XcmExecutor<XcmConfig>;
+	type Weigher = FixedWeightBounds<BaseXcmWeight, RuntimeCall, MaxInstructions>;
+	type BaseXcmWeight = BaseXcmWeight;
+	type UniversalLocation = UniversalLocation;
+	type MaxAssetsForTransfer = MaxAssetsForTransfer;
+	type MultiLocationsFilter = Everything;
+	type ReserveProvider = AbsoluteReserveProvider;
+	type MinXcmFee = ParachainMinFee;
+}
 
 
 #[cfg(test)]

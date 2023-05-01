@@ -104,7 +104,7 @@ impl Alternative {
 							.into_iter()
 							.map(get_authority_keys_from_seed)
 							.collect(),
-						get_account_id_from_seed::<sr25519::Public>(SUDO_ACCOUNT),
+						get_account_id_from_seed::<sr25519::Public>("Alice"),
 						endowed_accounts(),
 						true,
 					)
@@ -231,5 +231,8 @@ fn testnet_genesis(
 			..Default::default()
 		},
 		xcm_pallet: Default::default(),
+		asset_registry: Default::default(),
+		technical_committee: Default::default(),
+			parachain_info:Default::default()
 	}
 }

@@ -7,7 +7,7 @@ repository = "https://github.com/paritytech/parity-bridges-common/"
 license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
 
 [dependencies]
-hex-literal = "0.3"
+hex-literal = "0.4.1"
 codec = { package = "parity-scale-codec", version = "3.1.5", default-features = false, features = ["derive"] }
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
 
@@ -64,10 +64,14 @@ sp-transaction-pool = { git = "https://github.com/paritytech/substrate", branch 
 sp-version = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
 polkadot-parachain = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "master" }
 cumulus-pallet-xcm = { path="../../../modules/xcm",  default-features = false }
+pallet-collective = {git = "https://github.com/paritytech/substrate", default-features = false, branch = "master"}
 
-orml-xtokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", branch = "master", default-features = false }
-orml-tokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", branch = "master", default-features = false }
-orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", branch = "master", default-features = false }
+orml-xtokens = { path = "../../../pallets/xtokens",  default-features = false  }
+#orml-tokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", branch = "master", default-features = false }
+orml-traits = { path = "../../../pallets/traits", default-features = false }
+parachain-info = { git = "https://github.com/paritytech/cumulus", branch = "master", default-features = false }
+xcm-primitives = { path = "../../../xcm-primitives", default-features = false }
+pallet-asset-registry ={path = "../../../pallets/asset-registry", default-features = false }
 
 # Polkadot Dependencies
 pallet-xcm = { path="../../../xcm/pallet-xcm", default-features = false}
@@ -92,13 +96,17 @@ std = [
 	"bp-parachains/std",
 	"bp-polkadot-core/std",
 	"bp-relayers/std",
+	  "parachain-info/std",
 	"bp-rialto/std",
+	"pallet-collective/std",
 	"orml-xtokens/std",
-	"orml-tokens/std",
+	#"orml-tokens/std",
 	"orml-traits/std",
+	"xcm-primitives/std",
 	"cumulus-pallet-xcm/std",
 	"bp-rialto-parachain/std",
 	"bp-runtime/std",
+		"pallet-asset-registry/std",
 	"bp-westend/std",
 	"bridge-runtime-common/std",
 	"codec/std",
@@ -152,6 +160,9 @@ runtime-benchmarks = [
 	"pallet-bridge-parachains/runtime-benchmarks",
 	"pallet-bridge-relayers/runtime-benchmarks",
 	"pallet-xcm/runtime-benchmarks",
+		"pallet-asset-registry/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
+		"pallet-collective/runtime-benchmarks",	
 	"xcm-builder/runtime-benchmarks",
+	  "pallet-collective/runtime-benchmarks",
 ]

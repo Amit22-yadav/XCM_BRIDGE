@@ -15,11 +15,11 @@ frame-support = { git = "https://github.com/paritytech/substrate", default-featu
 frame-system = { git = "https://github.com/paritytech/substrate", default-features = false , branch = "master" }
 sp-std = { git = "https://github.com/paritytech/substrate", default-features = false , branch = "master" }
 
-pallet-xcm = { git = "https://github.com/paritytech/polkadot", default-features = false , branch = "master" }
-xcm = { git = "https://github.com/paritytech/polkadot", default-features = false , branch = "master" }
+pallet-xcm = { path="../../xcm/pallet-xcm",default-features = false  }
+xcm = { path="../../xcm", default-features = false  }
 
 [dev-dependencies]
-xcm-executor  = { git = "https://github.com/paritytech/polkadot", branch = "master" }
+xcm-executor  = { path="../../xcm/xcm-executor" }
 
 [features]
 default = ["std"]

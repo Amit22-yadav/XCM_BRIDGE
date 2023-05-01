@@ -23,13 +23,14 @@ sp-std = { git = "https://github.com/paritytech/substrate", default-features = f
 cumulus-primitives-core = { git = "https://github.com/paritytech/cumulus", default-features = false , branch = "master" }
 
 # polkadot
-pallet-xcm = { git = "https://github.com/paritytech/polkadot", default-features = false , branch = "master" }
-xcm = { git = "https://github.com/paritytech/polkadot", default-features = false , branch = "master" }
-xcm-executor = { git = "https://github.com/paritytech/polkadot", default-features = false , branch = "master" }
+pallet-xcm = { path ="../../xcm/pallet-xcm", default-features = false  }
+xcm = { path ="../../xcm", default-features = false  }
+xcm-executor = { path ="../../xcm/xcm-executor",default-features = false  }
 
 # orml
 orml-traits = { path = "../traits", default-features = false}
 orml-xcm-support = { path = "../xcm-support", default-features = false }
+bp-westend ={path="../../primitives/chain-westend",default-features = false}
 
 [dev-dependencies]
 # substrate
@@ -46,8 +47,8 @@ parachain-info = { git = "https://github.com/paritytech/cumulus", branch = "mast
 # polkadot
 polkadot-parachain = { git = "https://github.com/paritytech/polkadot", branch = "master" }
 polkadot-runtime-parachains = { git = "https://github.com/paritytech/polkadot", branch = "master" }
-xcm-builder = { git = "https://github.com/paritytech/polkadot", branch = "master" }
-xcm-simulator = { git = "https://github.com/paritytech/polkadot", branch = "master" }
+xcm-builder = { path="../../xcm/xcm-builder"}
+xcm-simulator = {path="../../xcm/xcm-simulator" }
 
 # orml
 orml-tokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library",branch = "master" }
@@ -57,11 +58,12 @@ orml-xcm = { path = "../xcm" }
 default = ["std"]
 std = [
 	"serde",
-	
+	"orml-tokens/std",
 	"codec/std",
 	"cumulus-primitives-core/std",
 	"frame-support/std",
 	"frame-system/std",
+	"bp-westend/std",
 	"orml-traits/std",
 	"orml-xcm-support/std",
 	"pallet-xcm/std",

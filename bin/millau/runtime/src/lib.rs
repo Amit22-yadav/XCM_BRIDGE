@@ -31,14 +31,17 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 pub mod rialto_messages;
 pub mod rialto_parachain_messages;
 pub mod xcm_config;
+use bp_millau::DAYS;
 
 use bp_parachains::SingleParaStoredHeaderDataBuilder;
 use bp_runtime::HeaderId;
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
+use frame_system::EnsureRoot;
 use pallet_transaction_payment::{FeeDetails, Multiplier, RuntimeDispatchInfo};
 use sp_api::impl_runtime_apis;
+use codec::{Decode, Encode, MaxEncodedLen};
 use sp_consensus_beefy::{crypto::AuthorityId as BeefyId, mmr::MmrLeafVersion, ValidatorSet};
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
@@ -48,13 +51,17 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, FixedPointNumber, Perquintill,
 };
+use scale_info::TypeInfo;
+use frame_support::traits::EitherOfDiverse;
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
+use xcm_primitives::AssetId;
 
 // to be able to use Millau runtime in `bridge-runtime-common` tests
 pub use bridge_runtime_common;
+use bp_millau::SLOT_DURATION;
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
@@ -73,6 +80,7 @@ pub use frame_support::{
 
 pub use frame_system::Call as SystemCall;
 pub use pallet_balances::Call as BalancesCall;
+use xcm_primitives::constants::chain::CORE_ASSET_ID;
 pub use pallet_bridge_grandpa::Call as BridgeGrandpaCall;
 pub use pallet_bridge_messages::Call as MessagesCall;
 pub use pallet_bridge_parachains::Call as BridgeParachainsCall;
@@ -87,6 +95,8 @@ use bridge_runtime_common::{
 		RefundableParachain,
 	},
 };
+
+mod registry;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
@@ -299,9 +309,9 @@ impl pallet_beefy_mmr::Config for Runtime {
 	type BeefyDataProvider = BeefyDummyDataProvider;
 }
 
-parameter_types! {
-	pub const MinimumPeriod: u64 = bp_millau::SLOT_DURATION / 2;
-}
+// parameter_types! {
+// 	pub const MinimumPeriod: u64 = bp_millau::SLOT_DURATION / 2;
+// }
 
 impl pallet_timestamp::Config for Runtime {
 	/// A timestamp: milliseconds since the UNIX epoch.
@@ -372,6 +382,59 @@ parameter_types! {
 	/// Authorities are changing every 5 minutes.
 	pub const Period: BlockNumber = bp_millau::SESSION_LENGTH;
 	pub const Offset: BlockNumber = 0;
+}
+
+
+parameter_types! {
+	pub const TechnicalMaxProposals: u32 = 20;
+	pub const TechnicalMaxMembers: u32 = 10;
+	pub const TechnicalMotionDuration: BlockNumber = 5 * DAYS;
+}
+
+pub type TechnicalCollective = pallet_collective::Instance2;
+impl pallet_collective::Config<TechnicalCollective> for Runtime {
+	type RuntimeOrigin = RuntimeOrigin;
+	type Proposal = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type MotionDuration = TechnicalMotionDuration;
+	type MaxProposals = TechnicalMaxProposals;
+	type MaxMembers = TechnicalMaxMembers;
+	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
+	type SetMembersOrigin = EnsureRoot<Self::AccountId>;
+	type MaxProposalWeight = ();
+}
+pub type SuperMajorityTechCommittee = EitherOfDiverse<
+	pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCollective, 2, 3>,
+	EnsureRoot<AccountId>,
+>;
+#[derive(Debug, Encode, Decode, Clone, PartialEq, Eq, TypeInfo)]
+pub struct AssetLocation(pub xcm::v3::MultiLocation);
+
+impl Default for AssetLocation {
+	fn default() -> Self {
+		AssetLocation(xcm::v3::MultiLocation::here())
+	}
+}
+
+
+parameter_types! {
+	pub const RegistryStrLimit: u32 = 32;
+	pub const SequentialIdOffset: u32 = 1_000_000;
+	pub const MinimumPeriod: u64 = SLOT_DURATION / 2;
+	pub const NativeAssetId : AssetId = CORE_ASSET_ID;
+}
+
+impl pallet_asset_registry::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RegistryOrigin = SuperMajorityTechCommittee;
+	type AssetId = AssetId;
+	type Balance = Balance;
+	type AssetNativeLocation = AssetLocation;
+	type StringLimit = RegistryStrLimit;
+	type SequentialIdStartAt = SequentialIdOffset;
+	type NativeAssetId = NativeAssetId;
+	type WeightInfo = registry::HydraWeight<Runtime>;
 }
 
 impl pallet_session::Config for Runtime {
@@ -490,7 +553,7 @@ impl pallet_bridge_messages::Config<WithRialtoParachainMessagesInstance> for Run
 	type MessageDispatch = crate::rialto_parachain_messages::FromRialtoParachainMessageDispatch;
 	type BridgedChainId = RialtoParachainChainId;
 }
-
+impl parachain_info::Config for Runtime {}
 parameter_types! {
 	pub const RialtoParachainMessagesLane: bp_messages::LaneId = rialto_parachain_messages::XCM_LANE;
 	pub const RialtoParachainId: u32 = bp_rialto_parachain::RIALTO_PARACHAIN_ID;
@@ -577,6 +640,10 @@ construct_runtime!(
 
 		// Pallet for sending XCM.
 		XcmPallet: pallet_xcm::{Pallet, Call, Storage, Event<T>, Origin, Config} = 99,
+		ParachainInfo: parachain_info = 105,
+		XTokens: orml_xtokens::{Pallet, Call, Storage, Event<T>, } = 43,
+		 AssetRegistry: pallet_asset_registry = 51,
+		 TechnicalCommittee: pallet_collective::<Instance2> = 25,
 	}
 );
 

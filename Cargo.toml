@@ -24,7 +24,6 @@ members = [
 	"primitives/chain-kusama",
 	"primitives/chain-millau",
 	"pallets/*",
-	"core-primitives",
 	"xcm-primitives",
 	"primitives/chain-polkadot",
 	"primitives/chain-rialto",

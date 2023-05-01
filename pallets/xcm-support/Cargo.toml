@@ -14,8 +14,8 @@ frame-support = { git = "https://github.com/paritytech/substrate", default-featu
 sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false , branch = "master" }
 sp-std = { git = "https://github.com/paritytech/substrate", default-features = false , branch = "master" }
 
-xcm = { git = "https://github.com/paritytech/polkadot", default-features = false , branch = "master" }
-xcm-executor = { git = "https://github.com/paritytech/polkadot", default-features = false , branch = "master" }
+xcm = { path ="../../xcm", default-features = false  }
+xcm-executor = { path ="../../xcm/xcm-executor",default-features = false  }
 
 orml-traits = { path = "../traits", version = "0.4.1-dev", default-features = false }
 

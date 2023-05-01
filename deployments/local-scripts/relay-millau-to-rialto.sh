@@ -14,7 +14,7 @@ RUST_LOG=bridge=debug \
 	--source-port $MILLAU_PORT \
 	--target-host localhost \
 	--target-port $RIALTO_PORT \
-	--target-signer //Sudo \
+	--target-signer //Alice \
 	--source-version-mode Bundle \
 	--target-version-mode Bundle
 

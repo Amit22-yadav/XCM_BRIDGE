@@ -14,10 +14,10 @@ parity-scale-codec = { version = "3.4.0", default-features = false, features = [
 scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
 sp-weights = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
 serde = { version = "1.0.136", optional = true, features = ["derive"] }
-xcm-procedural = { path = "procedural" }
+xcm-procedural = { path = "procedural",default-features = false }
 
 [dev-dependencies]
-sp-io = { git = "https://github.com/paritytech/substrate", branch = "master" }
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
 hex = "0.4.3"
 hex-literal = "0.4.1"
 

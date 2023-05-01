@@ -1,6 +1,6 @@
 use sp_runtime::{traits::ConstU32, WeakBoundedVec};
 use xcm::latest::prelude::*;
-use sp_core::bounded_vec::BoundedVec;
+use frame_support::BoundedVec;
 
 use crate::location::RelativeLocations;
 

@@ -14,7 +14,7 @@ RUST_LOG=bridge=debug \
 	--target-port $MILLAU_PORT \
 	--source-host localhost \
 	--source-port $RIALTO_PORT \
-	--target-signer //Sudo \
+	--target-signer //Alice \
 
 sleep 5
 RUST_LOG=bridge=debug \

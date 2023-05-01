@@ -20,7 +20,8 @@ sp-std = { git = "https://github.com/paritytech/substrate", default-features = f
 frame-support = { git = "https://github.com/paritytech/substrate", default-features = false , branch = "master" }
 sp-core = { git = "https://github.com/paritytech/substrate", default-features = false , branch = "master" }
 
-xcm = { git = "https://github.com/paritytech/polkadot", default-features = false , branch = "master" }
+xcm = { path ="../../xcm", default-features = false  }
+
 
 orml-utilities = { path = "../utilities", version = "0.4.1-dev", default-features = false }
 

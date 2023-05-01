@@ -1,5 +1,5 @@
 [package]
-name = "primitives"
+name = "xcm-primitives"
 version = "0.1.0"
 authors = ["GalacticCouncil"]
 edition = "2021"
@@ -20,5 +20,6 @@ std = [
     "serde",
     "codec/std",
     "scale-info/std",
-    "frame-support/std",
+    "frame-support/std"
+   
 ]
