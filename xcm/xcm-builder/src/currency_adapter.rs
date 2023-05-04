@@ -142,15 +142,16 @@ impl<
 	fn can_check_in(_origin: &MultiLocation, what: &MultiAsset, _context: &XcmContext) -> Result {
 		log::trace!(target: "xcm::currency_adapter", "can_check_in origin: {:?}, what: {:?}", _origin, what);
 		// Check we handle this asset.
-		let amount: Currency::Balance =
-			Matcher::matches_fungible(what).ok_or(Error::AssetNotHandled)?;
+		if let Some(amount )=Matcher::matches_fungible(what){
 		match CheckedAccount::get() {
 			Some((checked_account, MintLocation::Local)) =>
 				Self::can_reduce_checked(checked_account, amount),
 			Some((checked_account, MintLocation::NonLocal)) =>
 				Self::can_accrue_checked(checked_account, amount),
 			None => Ok(()),
-		}
+		};
+	}
+	Ok(())
 	}
 
 	fn check_in(_origin: &MultiLocation, what: &MultiAsset, _context: &XcmContext) {
@@ -194,7 +195,7 @@ impl<
 	fn deposit_asset(what: &MultiAsset, who: &MultiLocation, _context: &XcmContext) -> Result {
 		log::trace!(target: "xcm::currency_adapter", "deposit_asset what: {:?}, who: {:?}", what, who);
 		// Check we handle this asset.
-		let amount = Matcher::matches_fungible(&what).ok_or(Error::AssetNotHandled)?;
+		let amount = Matcher::matches_fungible(what).ok_or(Error::AssetNotHandled)?;
 		let who =
 			AccountIdConverter::convert_ref(who).map_err(|()| Error::AccountIdConversionFailed)?;
 		let _imbalance = Currency::deposit_creating(&who, amount);

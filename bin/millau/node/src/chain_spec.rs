@@ -87,7 +87,7 @@ impl Alternative {
 		let properties = Some(
 			serde_json::json!({
 				"tokenDecimals": 9,
-				"tokenSymbol": "UNITS"
+				"tokenSymbol": "UNIT"
 			})
 			.as_object()
 			.expect("Map given; qed")

@@ -14,13 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Polkadot.  If not, see <http://www.gnu.org/licenses/>.
 
+// use alloc::borrow;
+
 use frame_support::traits::Get;
 use parity_scale_codec::{Decode, Encode};
 use sp_io::hashing::blake2_256;
-use sp_runtime::traits::{AccountIdConversion, TrailingZeroInput};
+use sp_runtime::traits::{AccountIdConversion, TrailingZeroInput, CheckedConversion};
 use sp_std::{borrow::Borrow, marker::PhantomData};
 use xcm::latest::prelude::*;
 use xcm_executor::traits::Convert;
+use sp_std::convert::TryFrom;
 
 /// Prefix for generating alias account for accounts coming  
 /// from chains that use 32 byte long representations.
@@ -189,6 +192,113 @@ impl<ParaId: From<u32> + Into<u32> + AccountIdConversion<AccountId>, AccountId: 
 	}
 }
 
+// pub struct PalletInstanceConvertsVia<PalletInstance, AccountId>(PhantomData<(PalletInstance, AccountId)>);
+// impl<PalletInstance: From<u32> + Into<u32> + AccountIdConversion<AccountId>, AccountId: Clone>
+// 	Convert<MultiLocation, AccountId> for PalletInstanceConvertsVia<PalletInstance, AccountId>
+// {
+// 	fn convert_ref(location: impl Borrow<MultiLocation>) -> Result<AccountId, ()> {
+// 		match location.borrow() {
+// 			MultiLocation { parents: 0, interior: X1(PalletInstance(id)) } =>
+// 				Ok(PalletInstance::from(*id).into_account_truncating()),
+// 			_ => Err(()),
+// 		}
+// 	}
+
+// 	fn reverse_ref(who: impl Borrow<AccountId>) -> Result<MultiLocation, ()> {
+// 		if let Some(id) = PalletInstance::try_from_account(who.borrow()) {
+// 			Ok(PalletInstance(id.into()).into())
+// 		} else {
+// 			Err(())
+// 		}
+// 	}
+// }
+
+pub struct PalletInstanceConvertsVia<PalletInstance, AccountId>(PhantomData<(PalletInstance, AccountId)>);
+impl<PalletInstance: From<u32> + Into<u32> + AccountIdConversion<AccountId>, AccountId: Clone>
+	Convert<MultiLocation, AccountId> for PalletInstanceConvertsVia<PalletInstance, AccountId>
+{
+	fn convert_ref(location: impl Borrow<MultiLocation>) -> Result<AccountId, ()> {
+		match location.borrow() {
+			MultiLocation { parents: 0, interior: X1(PalletInstance(id)) } =>
+			Ok(PalletInstance::from((*id).into()).into_account_truncating()),
+			_ => Err(()),
+		}
+	}
+
+	fn reverse_ref(who: impl Borrow<AccountId>) -> Result<MultiLocation, ()> {
+		if let Some(id) = PalletInstance::try_from_account(who.borrow()) {
+			Ok(PalletInstance(id.into().try_into().unwrap()).into())
+		} else {
+			Err(())
+		}
+	}
+}
+// pub struct NetworkIdConvertsVia<NetworkId, AccountId>(PhantomData<(NetworkId, AccountId)>);
+// impl<NetworkId: From<u32> + Into<u32> + AccountIdConversion<AccountId>, AccountId: Clone>
+// 	Convert<MultiLocation, AccountId> for NetworkIdConvertsVia<NetworkId, AccountId>
+// {
+// 	fn convert_ref(location: impl Borrow<MultiLocation>) -> Result<AccountId, ()> {
+// 		match location.borrow() {
+// 			MultiLocation { parents: 0, interior: X1(GlobalConsensus(network)) } =>
+// 				Ok( network == NetworkId::get()),
+// 			_ => Err(()),
+// 		}
+// 	}
+
+// 	fn reverse_ref(who: impl Borrow<AccountId>) -> Result<MultiLocation, ()> {
+// 		if let Some(id) = NetworkId::try_from_account(who.borrow()) {
+// 			Ok(GlobalConsensus(id.into()).into())
+// 		} else {
+// 			Err(())
+// 		}
+// 	}
+// }
+
+
+// pub struct NetworkIdConvertsVia<Network, AccountId>(PhantomData<(Network, AccountId)>);
+// impl<Network: Get<NetworkId>, AccountId: From<[u8; 32]> + Into<[u8; 32]> + Clone    >
+// 	Convert<MultiLocation, AccountId> for NetworkIdConvertsVia<Network, AccountId> where xcm::v3::NetworkId: From<AccountId>
+// {
+
+// 	fn convert(location: MultiLocation) -> Result<AccountId, MultiLocation> {
+// 		 let id = match location {
+// 			// MultiLocation { parents: 0, interior: X1(GlobalConsensus(network,id)) }=> id , 
+// 		   MultiLocation { parents: 0, interior: X1(GlobalConsensus(network)) }  => network,  
+// 		_=>return Err(location)
+// 	   };
+// 	//  /  Ok(MultiLocation::new(1, X1(GlobalConsensus(id.into()))))
+// 	   Ok(id.borrow())
+// 	 //  Ok((<xcm::v3::NetworkId as Into<T>>::into(id)).into())
+// 	 //todo!()
+// 	}
+
+
+// }
+
+// pub struct NetworkIdConvertsVia<Network, AccountId>(PhantomData<(Network, AccountId)>);
+// impl<Network: Get<NetworkId>, AccountId: From<[u8; 32]> + Into<[u8; 32]> + Clone  >
+// 	Convert<MultiLocation, AccountId> for NetworkIdConvertsVia<Network, AccountId> 
+// {
+// 	fn convert_ref(location: impl Borrow<MultiLocation>) -> Result<AccountId, ()> {
+// 		match location.borrow() {
+// 			MultiLocation { parents: 0, interior: X1(GlobalConsensus(network)) } =>
+// 			//let j = Ok(Network::from(*network)).into_ok();,
+// 			Ok( Network::get() ),
+// 			_ => Err(()),
+// 		}
+// 	}
+
+	// fn reverse_ref(who: impl Borrow<AccountId>) -> Result<MultiLocation, ()> {
+	// 	if let Some(id) = ParaId::try_from_account(who.borrow()) {
+	// 		Ok(MultiLocation::new(1, X1(Parachain(id.into()))))
+	// 	} else {
+	// 		Err(())
+	// 	}
+	// }
+
+//}
+
+
 pub struct SiblingParachainConvertsVia<ParaId, AccountId>(PhantomData<(ParaId, AccountId)>);
 impl<ParaId: From<u32> + Into<u32> + AccountIdConversion<AccountId>, AccountId: Clone>
 	Convert<MultiLocation, AccountId> for SiblingParachainConvertsVia<ParaId, AccountId>
@@ -208,6 +318,7 @@ impl<ParaId: From<u32> + Into<u32> + AccountIdConversion<AccountId>, AccountId: 
 			Err(())
 		}
 	}
+
 }
 
 /// Extracts the `AccountId32` from the passed `location` if the network matches.

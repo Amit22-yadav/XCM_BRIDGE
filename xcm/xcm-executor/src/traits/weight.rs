@@ -72,11 +72,12 @@ impl WeightTrader for Tuple {
 		for_tuples!( #(
 			match Tuple.buy_weight(weight, payment.clone()) {
 				Ok(assets) => return Ok(assets),
-				Err(e) => {
-					if let XcmError::TooExpensive = e {
-						too_expensive_error_found = true;
-					}
-					last_error = Some(e)
+				Err(assets) => {
+					return Err((assets))
+					// if let XcmError::TooExpensive = e {
+					// 	too_expensive_error_found = true;
+					// }
+					// last_error = Some(e)
 				}
 			}
 		)* );
@@ -86,9 +87,9 @@ impl WeightTrader for Tuple {
 		// if we have multiple traders, and first one returns `TooExpensive` and others fail e.g. `AssetNotFound`
 		// then it is more accurate to return `TooExpensive` then `AssetNotFound`
 		Err(if too_expensive_error_found {
-			XcmError::TooExpensive
+			XcmError::NotDepositable
 		} else {
-			last_error.unwrap_or(XcmError::TooExpensive)
+			last_error.unwrap_or(XcmError::NotDepositable)
 		})
 	}
 

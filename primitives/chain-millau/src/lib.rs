@@ -56,7 +56,7 @@ pub const EXTRA_STORAGE_PROOF_SIZE: u32 = 1024;
 /// Number of bytes, included in the signed Millau transaction apart from the encoded call itself.
 ///
 /// Can be computed by subtracting encoded call size from raw transaction size.
-pub const TX_EXTRA_BYTES: u32 = 103;
+pub const TX_EXTRA_BYTES: u32 = 104;
 
 /// Maximum weight of single Millau block.
 ///
@@ -122,7 +122,7 @@ pub mod time_units {
 }
 
 /// Block number type used in Millau.
-pub type BlockNumber = u64;
+pub type BlockNumber = u32;
 
 /// Hash type used in Millau.
 pub type Hash = <BlakeTwo256 as HasherT>::Out;
@@ -144,8 +144,9 @@ pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::Account
 pub type AccountSigner = MultiSigner;
 
 /// Balance of an account.
-pub type Balance = u64;
+pub type Balance = u128;
 
+pub type Moment = u64;
 /// Index of a transaction in the chain.
 pub type Index = u32;
 
@@ -235,7 +236,7 @@ impl sp_runtime::traits::Hash for BlakeTwoAndKeccak256 {
 
 frame_support::parameter_types! {
 	pub BlockLength: limits::BlockLength =
-		limits::BlockLength::max_with_normal_ratio(2 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
+		limits::BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
 	pub BlockWeights: limits::BlockWeights =
 		limits::BlockWeights::with_sensible_defaults(MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO);
 }

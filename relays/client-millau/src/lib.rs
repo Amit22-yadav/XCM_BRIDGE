@@ -115,7 +115,7 @@ impl ChainWithTransactions for Millau {
 
 		Ok(millau_runtime::UncheckedExtrinsic::new_signed(
 			call.into_decoded()?,
-			signer.into_account(),
+			signer.into_account().into(),
 			signature.into(),
 			extra,
 		))
@@ -128,9 +128,7 @@ impl ChainWithTransactions for Millau {
 	fn is_signed_by(signer: &Self::AccountKeyPair, tx: &Self::SignedTransaction) -> bool {
 		tx.signature
 			.as_ref()
-			.map(|(address, _, _)| {
-				*address == millau_runtime::Address::from(*signer.public().as_array_ref())
-			})
+			.map(|(address, _, _)| *address == millau_runtime::Address::Id(signer.public().into()))
 			.unwrap_or(false)
 	}
 

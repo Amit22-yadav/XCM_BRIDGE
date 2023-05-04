@@ -17,6 +17,7 @@
 use crate::Assets;
 use sp_std::result::Result;
 use xcm::latest::{Error as XcmError, MultiAsset, MultiLocation, Result as XcmResult, XcmContext};
+use log::{info};
 
 /// Facility for asset transacting.
 ///
@@ -129,8 +130,11 @@ pub trait TransactAsset {
 		match Self::internal_transfer_asset(asset, from, to, context)
 		
 		 {
-			Err(XcmError::AssetNotFound | XcmError::Unimplemented) => {
+			
+			Err(XcmError:: InvalidLocation| XcmError::Unimplemented) => {
+				frame_support::log::info!("=========44444444444444========== {:?} ",asset);
 				let assets = Self::withdraw_asset(asset, from, Some(context))?;
+				
 				// Not a very forgiving attitude; once we implement roll-backs then it'll be nicer.
 				Self::deposit_asset(asset, to, context)?;
 				Ok(assets)
@@ -145,10 +149,15 @@ impl TransactAsset for Tuple {
 	fn can_check_in(origin: &MultiLocation, what: &MultiAsset, context: &XcmContext) -> XcmResult {
 		for_tuples!( #(
 			match Tuple::can_check_in(origin, what, context) {
+
 				Err(XcmError::AssetNotFound) | Err(XcmError::Unimplemented) => (),
 				r => return r,
+			
 			}
+			// frame_support::log::warn!("=========55555555555555==========  ");
+			
 		)* );
+
 		log::trace!(
 			target: "xcm::TransactAsset::can_check_in",
 			"asset not found: what: {:?}, origin: {:?}, context: {:?}",
@@ -156,7 +165,8 @@ impl TransactAsset for Tuple {
 			origin,
 			context,
 		);
-		Err(XcmError::AssetNotFound)
+		frame_support::log::info!("=========66666666666666==========  {:?},{:?},{:?}",what,origin,context);
+		Err(XcmError::InvalidLocation)
 	}
 
 	fn check_in(origin: &MultiLocation, what: &MultiAsset, context: &XcmContext) {
@@ -171,6 +181,8 @@ impl TransactAsset for Tuple {
 				Err(XcmError::AssetNotFound) | Err(XcmError::Unimplemented) => (),
 				r => return r,
 			}
+
+			
 		)* );
 		log::trace!(
 			target: "xcm::TransactAsset::can_check_out",
@@ -179,6 +191,7 @@ impl TransactAsset for Tuple {
 			dest,
 			context,
 		);
+		frame_support::log::info!("=========77777777777777========= {:?},{:?},{:?} ",what,dest,context);
 		Err(XcmError::AssetNotFound)
 	}
 
@@ -195,6 +208,7 @@ impl TransactAsset for Tuple {
 				r => return r,
 			}
 		)* );
+		frame_support::log::info!("=========8888888888888========={:?},{:?},{:?}  ",what,who,context);
 		log::trace!(
 			target: "xcm::TransactAsset::deposit_asset",
 			"did not deposit asset: what: {:?}, who: {:?}, context: {:?}",
@@ -202,6 +216,7 @@ impl TransactAsset for Tuple {
 			who,
 			context,
 		);
+		frame_support::log::info!("=========9999999999999999========={:?},{:?},{:?}  ",what,who,context,);
 		Err(XcmError::AssetNotFound)
 	}
 
@@ -215,6 +230,7 @@ impl TransactAsset for Tuple {
 				Err(XcmError::AssetNotFound) | Err(XcmError::Unimplemented) => (),
 				r => return r,
 			}
+		frame_support::log::info!("=========9999999999999999=========  ");
 		)* );
 		log::trace!(
 			target: "xcm::TransactAsset::withdraw_asset",
@@ -223,6 +239,7 @@ impl TransactAsset for Tuple {
 			who,
 			maybe_context,
 		);
+		frame_support::log::info!("*********************=========9999999999999999=========  {:?},{:?},{:?}",what,who,maybe_context);
 		Err(XcmError::AssetNotFound)
 	}
 
@@ -238,6 +255,7 @@ impl TransactAsset for Tuple {
 				r => return r,
 			}
 		)* );
+		frame_support::log::info!("=========9999999999999999=========  ");
 		log::trace!(
 			target: "xcm::TransactAsset::internal_transfer_asset",
 			"did not transfer asset: what: {:?}, from: {:?}, to: {:?}, context: {:?}",
@@ -246,6 +264,7 @@ impl TransactAsset for Tuple {
 			to,
 			context,
 		);
+		info!("=========9999999999999999========={:?},{:?},{:?},{:?}  ",what,from,to,context);
 		Err(XcmError::AssetNotFound)
 	}
 }
@@ -265,7 +284,9 @@ mod tests {
 			_what: &MultiAsset,
 			_context: &XcmContext,
 		) -> XcmResult {
+			log::warn!("=========9999999999999999=========  ");
 			Err(XcmError::AssetNotFound)
+			
 		}
 
 		fn can_check_out(
@@ -273,6 +294,7 @@ mod tests {
 			_what: &MultiAsset,
 			_context: &XcmContext,
 		) -> XcmResult {
+			log::warn!("=========9999999999999999=========  ");
 			Err(XcmError::AssetNotFound)
 		}
 
@@ -281,6 +303,7 @@ mod tests {
 			_who: &MultiLocation,
 			_context: &XcmContext,
 		) -> XcmResult {
+			frame_support::log::warn!("=========9999999999999999=========  ");
 			Err(XcmError::AssetNotFound)
 		}
 
@@ -289,6 +312,7 @@ mod tests {
 			_who: &MultiLocation,
 			_context: Option<&XcmContext>,
 		) -> Result<Assets, XcmError> {
+			frame_support::log::warn!("=========9999999999999999=========  ");
 			Err(XcmError::AssetNotFound)
 		}
 
@@ -298,6 +322,7 @@ mod tests {
 			_to: &MultiLocation,
 			_context: &XcmContext,
 		) -> Result<Assets, XcmError> {
+			frame_support::log::warn!("=========9999999999999999=========  ");
 			Err(XcmError::AssetNotFound)
 		}
 	}
@@ -401,6 +426,7 @@ mod tests {
 				&Here.into(),
 				&XcmContext::with_message_hash([0; 32]),
 			),
+			frame_support::log::warn!("=========9999999999999999=========  ");
 			Err(XcmError::AssetNotFound)
 		);
 	}

@@ -313,6 +313,7 @@ pub mod pallet {
 
             Assets::<T>::try_mutate(asset_id, |maybe_detail| -> DispatchResult {
                 let mut detail = maybe_detail.as_mut().ok_or(Error::<T>::AssetNotFound)?;
+                frame_support::log::warn!("==========11111111111111111111111============  ");
 
                 let bounded_name = Self::to_bounded_name(name)?;
 
@@ -359,6 +360,7 @@ pub mod pallet {
             T::RegistryOrigin::ensure_origin(origin)?;
 
             ensure!(Self::assets(asset_id).is_some(), Error::<T>::AssetNotFound);
+            frame_support::log::info!("==========2222222222222============  ");
 
             let b_symbol = Self::to_bounded_name(symbol)?;
 
@@ -520,6 +522,7 @@ impl<T: Config> Registry<T::AssetId, Vec<u8>, T::Balance, DispatchError> for Pal
         if let Some(asset_id) = AssetIds::<T>::get(bounded_name) {
             Ok(asset_id)
         } else {
+            frame_support::log::warn!("=========333333333333333===========  ");
             Err(Error::<T>::AssetNotFound.into())
         }
     }

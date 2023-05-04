@@ -32,7 +32,7 @@ pub mod rialto_messages;
 pub mod rialto_parachain_messages;
 pub mod xcm_config;
 use bp_millau::DAYS;
-
+use sp_runtime::traits::AccountIdLookup;
 use bp_parachains::SingleParaStoredHeaderDataBuilder;
 use bp_runtime::HeaderId;
 use pallet_grandpa::{
@@ -161,7 +161,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
-	state_version: 0,
+	state_version: 1,
 };
 
 /// The version information used to identify this runtime when compiled natively.
@@ -177,7 +177,7 @@ parameter_types! {
 		read: 60_000_000, // ~0.06 ms = ~60 µs
 		write: 200_000_000, // ~0.2 ms = 200 µs
 	};
-	pub const SS58Prefix: u8 = 60;
+	pub const SS58Prefix: u8 = 48;
 }
 
 impl frame_system::Config for Runtime {
@@ -188,7 +188,7 @@ impl frame_system::Config for Runtime {
 	/// The aggregated dispatch type that is available for extrinsics.
 	type RuntimeCall = RuntimeCall;
 	/// The lookup mechanism to get account ID from whatever is passed in dispatchers.
-	type Lookup = IdentityLookup<AccountId>;
+	type Lookup = AccountIdLookup<AccountId,()>;
 	/// The index type for storing how many extrinsics an account has signed.
 	type Index = Index;
 	/// The index type for blocks.
@@ -514,8 +514,8 @@ impl pallet_bridge_messages::Config<WithRialtoMessagesInstance> for Runtime {
 	type LaneMessageVerifier = crate::rialto_messages::ToRialtoMessageVerifier;
 	type DeliveryConfirmationPayments = pallet_bridge_relayers::DeliveryConfirmationPaymentsAdapter<
 		Runtime,
-		frame_support::traits::ConstU64<100_000>,
-		frame_support::traits::ConstU64<10_000>,
+		frame_support::traits::ConstU128<100_000>,
+		frame_support::traits::ConstU128<100_000>,
 	>;
 
 	type SourceHeaderChain = crate::rialto_messages::RialtoAsSourceHeaderChain;
@@ -545,8 +545,8 @@ impl pallet_bridge_messages::Config<WithRialtoParachainMessagesInstance> for Run
 	type LaneMessageVerifier = crate::rialto_parachain_messages::ToRialtoParachainMessageVerifier;
 	type DeliveryConfirmationPayments = pallet_bridge_relayers::DeliveryConfirmationPaymentsAdapter<
 		Runtime,
-		frame_support::traits::ConstU64<100_000>,
-		frame_support::traits::ConstU64<10_000>,
+		frame_support::traits::ConstU128<100_000>,
+		frame_support::traits::ConstU128<100_000>,
 	>;
 
 	type SourceHeaderChain = crate::rialto_parachain_messages::RialtoParachainAsSourceHeaderChain;
@@ -668,7 +668,7 @@ pub type BridgeRefundRialtoParachainMessages = RefundBridgedParachainMessages<
 >;
 
 /// The address format for describing accounts.
-pub type Address = AccountId;
+pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, Hashing>;
 /// Block type as expected by this runtime.

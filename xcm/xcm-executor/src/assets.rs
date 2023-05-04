@@ -412,10 +412,12 @@ impl Assets {
 						*balance -= amount;
 						*balance == 0
 					} else {
-						return Err(self)
+						todo!()
+						//return Err(self)
 					}
 				} else {
-					return Err(self)
+					todo!()
+					//return Err(self)
 				};
 				if remove {
 					self.fungible.remove(&asset.id);

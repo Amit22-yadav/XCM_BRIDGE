@@ -15,15 +15,17 @@
 // along with Parity Bridges Common.  If not, see <http://www.gnu.org/licenses/>.
 
 //! XCM configurations for the Millau runtime.
-
+extern crate alloc;
 use super::{
 	rialto_messages::{WithRialtoMessageBridge, XCM_LANE},
 	rialto_parachain_messages::{WithRialtoParachainMessageBridge, XCM_LANE as XCM_LANE_PARACHAIN},
 	AccountId, AllPalletsWithSystem, Balances, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
 	WithRialtoMessagesInstance, WithRialtoParachainMessagesInstance, XcmPallet,
 };
+use xcm_executor::traits::ConvertOrigin;
+
 use sp_core::Get;
-use xcm::opaque::v2::NetworkId::Any;
+use xcm::{opaque::v2::NetworkId::Any, v3::NetworkId::Polkadot};
 use xcm_primitives::Balance;
 use xcm_executor::XcmExecutor;
 use xcm_builder::MintLocation;
@@ -84,6 +86,7 @@ parameter_types! {
 pub type SovereignAccountOf = (
 	// We can directly alias an `AccountId32` into a local account.
 	AccountId32Aliases<ThisNetwork, AccountId>,
+	AccountId32Aliases<RialtoNetwork, bp_rialto::AccountId>,
 );
 
 /// Our asset transactor. This is what allows us to interest with the runtime facilities from the
@@ -109,14 +112,15 @@ type LocalOriginConverter = (
 	SovereignSignedViaLocation<SovereignAccountOf, RuntimeOrigin>,
 	// The AccountId32 location type can be expressed natively as a `Signed` origin.
 	SignedAccountId32AsNative<ThisNetwork, RuntimeOrigin>,
+	SignedToAccountId32<RuntimeOrigin,AccountId,RialtoNetwork,>
 );
 
 parameter_types! {
 	pub const Roc: MultiAssetFilter = Wild(AllOf { fun: WildFungible, id: Concrete(TokenLocation::get()) });
 	//pub const Rialto: MultiLocation = GlobalConsensus(ByGenesis([0xf2;0xf7;0xf0;0x28;0xa7;0x59;0xe2;0xe3;0xb9;08dc38fedd28979b006da63e4cf6d923b29cd90e61206a7; 32])).into_location();
 	//pub const Millau: MultiLocation = GlobalConsensus(ByGenesis([u8; 32])).into_location();
-	 pub const Rialto: MultiLocation = PalletInstance(100).into_location();
-	 pub const Millau: MultiLocation = Parachain(2000).into_location();
+	 pub const Rialto: MultiLocation = GlobalConsensus(Polkadot).into_location();
+	 pub const Millau: MultiLocation = GlobalConsensus(Kusama).into_location();
 	pub const OurMillau: (MultiAssetFilter, MultiLocation) = (Roc::get(), Millau::get());
 	pub const OurRialto: (MultiAssetFilter, MultiLocation) = (Roc::get(), Rialto::get());
 	pub const MaxAssetsForTransfer: usize = 2;
@@ -201,6 +205,15 @@ parameter_types! {
 	pub ReachableDest: Option<MultiLocation> = todo!("We dont use benchmarks for pallet_xcm, so if you hit this message, you need to remove this and define value instead");
 }
 
+impl ConvertOrigin<RuntimeOrigin> for SignedToAccountId32<RuntimeOrigin, sp_runtime::AccountId32, RialtoNetwork>{
+	fn convert_origin(
+			origin: impl Into<MultiLocation>,
+			kind: OriginKind,
+		) -> Result<RuntimeOrigin, MultiLocation> {
+		todo!()
+	}
+}
+
 impl pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	// We don't allow any messages to be sent via the transaction yet. This is basically safe to
@@ -248,7 +261,7 @@ impl XcmBridge for ToRialtoBridge {
 	}
 
 	fn verify_destination(dest: &MultiLocation) -> bool {
-		matches!(*dest, MultiLocation { parents: 1, interior: X1(PalletInstance(100)) })
+		matches!(*dest, MultiLocation { parents: 1, interior: X1(GlobalConsensus(Polkadot)) })
 	}
 
 	fn build_destination() -> MultiLocation {
@@ -362,9 +375,9 @@ impl Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
 }
 
 
-parameter_types! {
-	pub SelfLocation: MultiLocation = MultiLocation::new(1, X1(PalletInstance(ParachainInfo::get().into())));
-}
+// parameter_types! {
+// 	pub SelfLocation: MultiLocation = MultiLocation::new(1, X1(GlobalConsensus(ParachainInfo::get().into())));
+// }
 
 // impl bp_westend::Convert<u32, Option<xcm::v3::MultiLocation>> for CurrencyIdConvert{
 // 	fn convert(a: u32) -> Option<xcm::v3::MultiLocation> {
@@ -378,7 +391,7 @@ impl orml_xtokens::Config for Runtime {
 	type CurrencyId = xcm_primitives::AssetId;
 	type CurrencyIdConvert = CurrencyIdConvert;
 	type AccountIdToMultiLocation = AccountIdToMultiLocation;
-	type SelfLocation = SelfLocation;
+	type SelfLocation = ();
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type Weigher = FixedWeightBounds<BaseXcmWeight, RuntimeCall, MaxInstructions>;
 	type BaseXcmWeight = BaseXcmWeight;
