@@ -22,8 +22,9 @@ use super::{
 	AccountId, AllPalletsWithSystem, Balances, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin,
 	WithRialtoMessagesInstance, WithRialtoParachainMessagesInstance, XcmPallet,
 };
+use pallet_collective::EnsureProportionAtLeast;
 use xcm_executor::traits::ConvertOrigin;
-
+use frame_support::traits::EitherOfDiverse;
 use sp_core::Get;
 use xcm::{opaque::v2::NetworkId::Any, v3::NetworkId::Polkadot};
 use xcm_primitives::Balance;
@@ -88,6 +89,10 @@ pub type SovereignAccountOf = (
 	AccountId32Aliases<ThisNetwork, AccountId>,
 	AccountId32Aliases<RialtoNetwork, bp_rialto::AccountId>,
 );
+
+pub type CouncilCollective = pallet_collective::Instance1;
+// pub type HalfOfCouncil = EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
+pub type EnsureRootOr<O> = EitherOfDiverse<EnsureRoot<AccountId>, O>;
 
 /// Our asset transactor. This is what allows us to interest with the runtime facilities from the
 /// point of view of XCM-only concepts like `MultiLocation` and `MultiAsset`.
@@ -163,7 +168,10 @@ pub type Barrier = (
 );
 
 /// XCM weigher type.
+
 pub type XcmWeigher = xcm_builder::FixedWeightBounds<BaseXcmWeight, RuntimeCall, MaxInstructions>;
+
+
 
 pub struct XcmConfig;
 impl xcm_executor::Config for XcmConfig {
@@ -373,7 +381,10 @@ impl Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
 		.into()
 	}
 }
-
+// impl orml_xcm::Config for Runtime {
+// 	type RuntimeEvent = RuntimeEvent;
+// 	type SovereignOrigin = EnsureRootOr<HalfOfCouncil>;
+// }
 
 // parameter_types! {
 // 	pub SelfLocation: MultiLocation = MultiLocation::new(1, X1(GlobalConsensus(ParachainInfo::get().into())));

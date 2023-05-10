@@ -320,13 +320,13 @@ impl DefaultConfigurationValues for RelayChainCli {
 		30334
 	}
 
-	fn rpc_ws_listen_port() -> u16 {
+	fn rpc_listen_port() -> u16 {
 		9945
 	}
 
-	fn rpc_http_listen_port() -> u16 {
-		9934
-	}
+	// fn rpc_http_listen_port() -> u16 {
+	// 	9934
+	// }
 
 	fn prometheus_listen_port() -> u16 {
 		9616
@@ -334,112 +334,114 @@ impl DefaultConfigurationValues for RelayChainCli {
 }
 
 impl CliConfiguration<Self> for RelayChainCli {
-	fn shared_params(&self) -> &SharedParams {
-		self.base.base.shared_params()
-	}
 
-	fn import_params(&self) -> Option<&ImportParams> {
-		self.base.base.import_params()
-	}
+	fn shared_params(&self) -> &SharedParams { todo!() }
+	// fn shared_params(&self) -> &SharedParams {
+	// 	self.base.base.shared_params()
+	// }
 
-	fn network_params(&self) -> Option<&NetworkParams> {
-		self.base.base.network_params()
-	}
+	// fn import_params(&self) -> Option<&ImportParams> {
+	// 	self.base.base.import_params()
+	// }
 
-	fn keystore_params(&self) -> Option<&KeystoreParams> {
-		self.base.base.keystore_params()
-	}
+	// fn network_params(&self) -> Option<&NetworkParams> {
+	// 	self.base.base.network_params()
+	// }
 
-	fn base_path(&self) -> Result<Option<BasePath>> {
-		Ok(self
-			.shared_params()
-			.base_path()?
-			.or_else(|| self.base_path.clone().map(Into::into)))
-	}
+	// fn keystore_params(&self) -> Option<&KeystoreParams> {
+	// 	self.base.base.keystore_params()
+	// }
 
-	fn rpc_http(&self, default_listen_port: u16) -> Result<Option<SocketAddr>> {
-		self.base.base.rpc_http(default_listen_port)
-	}
+	// fn base_path(&self) -> Result<Option<BasePath>> {
+	// 	Ok(self
+	// 		.shared_params()
+	// 		.base_path()?
+	// 		.or_else(|| self.base_path.clone().map(Into::into)))
+	// }
 
-	fn rpc_ipc(&self) -> Result<Option<String>> {
-		self.base.base.rpc_ipc()
-	}
+	// fn rpc_http(&self, default_listen_port: u16) -> Result<Option<SocketAddr>> {
+	// 	self.base.base.rpc_http(default_listen_port)
+	// }
 
-	fn rpc_ws(&self, default_listen_port: u16) -> Result<Option<SocketAddr>> {
-		self.base.base.rpc_ws(default_listen_port)
-	}
+	// fn rpc_ipc(&self) -> Result<Option<String>> {
+	// 	self.base.base.rpc_ipc()
+	// }
 
-	fn prometheus_config(
-		&self,
-		default_listen_port: u16,
-		chain_spec: &Box<dyn ChainSpec>,
-	) -> Result<Option<PrometheusConfig>> {
-		self.base.base.prometheus_config(default_listen_port, chain_spec)
-	}
+	// fn rpc_ws(&self, default_listen_port: u16) -> Result<Option<SocketAddr>> {
+	// 	self.base.base.rpc_ws(default_listen_port)
+	// }
 
-	fn init<F>(
-		&self,
-		_support_url: &String,
-		_impl_version: &String,
-		_logger_hook: F,
-		_config: &sc_service::Configuration,
-	) -> Result<()>
-	where
-		F: FnOnce(&mut sc_cli::LoggerBuilder, &sc_service::Configuration),
-	{
-		unreachable!("PolkadotCli is never initialized; qed");
-	}
+	// fn prometheus_config(
+	// 	&self,
+	// 	default_listen_port: u16,
+	// 	chain_spec: &Box<dyn ChainSpec>,
+	// ) -> Result<Option<PrometheusConfig>> {
+	// 	self.base.base.prometheus_config(default_listen_port, chain_spec)
+	// }
 
-	fn chain_id(&self, is_dev: bool) -> Result<String> {
-		let chain_id = self.base.base.chain_id(is_dev)?;
+	// fn init<F>(
+	// 	&self,
+	// 	_support_url: &String,
+	// 	_impl_version: &String,
+	// 	_logger_hook: F,
+	// 	_config: &sc_service::Configuration,
+	// ) -> Result<()>
+	// where
+	// 	F: FnOnce(&mut sc_cli::LoggerBuilder, &sc_service::Configuration),
+	// {
+	// 	unreachable!("PolkadotCli is never initialized; qed");
+	// }
 
-		Ok(if chain_id.is_empty() { self.chain_id.clone().unwrap_or_default() } else { chain_id })
-	}
+	// fn chain_id(&self, is_dev: bool) -> Result<String> {
+	// 	let chain_id = self.base.base.chain_id(is_dev)?;
 
-	fn role(&self, is_dev: bool) -> Result<sc_service::Role> {
-		self.base.base.role(is_dev)
-	}
+	// 	Ok(if chain_id.is_empty() { self.chain_id.clone().unwrap_or_default() } else { chain_id })
+	// }
 
-	fn transaction_pool(&self, is_dev: bool) -> Result<sc_service::config::TransactionPoolOptions> {
-		self.base.base.transaction_pool(is_dev)
-	}
+	// fn role(&self, is_dev: bool) -> Result<sc_service::Role> {
+	// 	self.base.base.role(is_dev)
+	// }
 
-	fn rpc_methods(&self) -> Result<sc_service::config::RpcMethods> {
-		self.base.base.rpc_methods()
-	}
+	// fn transaction_pool(&self, is_dev: bool) -> Result<sc_service::config::TransactionPoolOptions> {
+	// 	self.base.base.transaction_pool(is_dev)
+	// }
 
-	fn rpc_ws_max_connections(&self) -> Result<Option<usize>> {
-		self.base.base.rpc_ws_max_connections()
-	}
+	// fn rpc_methods(&self) -> Result<sc_service::config::RpcMethods> {
+	// 	self.base.base.rpc_methods()
+	// }
 
-	fn rpc_cors(&self, is_dev: bool) -> Result<Option<Vec<String>>> {
-		self.base.base.rpc_cors(is_dev)
-	}
+	// fn rpc_max_connections(&self) -> Result<Option<usize>> {
+	// 	self.base.base.rpc_max_connections()
+	// }
 
-	fn default_heap_pages(&self) -> Result<Option<u64>> {
-		self.base.base.default_heap_pages()
-	}
+	// fn rpc_cors(&self, is_dev: bool) -> Result<Option<Vec<String>>> {
+	// 	self.base.base.rpc_cors(is_dev)
+	// }
 
-	fn force_authoring(&self) -> Result<bool> {
-		self.base.base.force_authoring()
-	}
+	// fn default_heap_pages(&self) -> Result<Option<u64>> {
+	// 	self.base.base.default_heap_pages()
+	// }
 
-	fn disable_grandpa(&self) -> Result<bool> {
-		self.base.base.disable_grandpa()
-	}
+	// fn force_authoring(&self) -> Result<bool> {
+	// 	self.base.base.force_authoring()
+	// }
 
-	fn max_runtime_instances(&self) -> Result<Option<usize>> {
-		self.base.base.max_runtime_instances()
-	}
+	// fn disable_grandpa(&self) -> Result<bool> {
+	// 	self.base.base.disable_grandpa()
+	// }
 
-	fn announce_block(&self) -> Result<bool> {
-		self.base.base.announce_block()
-	}
+	// fn max_runtime_instances(&self) -> Result<Option<usize>> {
+	// 	self.base.base.max_runtime_instances()
+	// }
 
-	fn telemetry_endpoints(
-		&self,
-		chain_spec: &Box<dyn ChainSpec>,
-	) -> Result<Option<sc_telemetry::TelemetryEndpoints>> {
-		self.base.base.telemetry_endpoints(chain_spec)
-	}
+	// fn announce_block(&self) -> Result<bool> {
+	// 	self.base.base.announce_block()
+	// }
+
+	// fn telemetry_endpoints(
+	// 	&self,
+	// 	chain_spec: &Box<dyn ChainSpec>,
+	// ) -> Result<Option<sc_telemetry::TelemetryEndpoints>> {
+	// 	self.base.base.telemetry_endpoints(chain_spec)
+	// }
 }

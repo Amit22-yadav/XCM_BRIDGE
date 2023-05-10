@@ -87,6 +87,23 @@ pub mod chain {
 	Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_div(2), u64::MAX);
 }
 
+pub mod types {
+	use frame_support::traits::EitherOfDiverse;
+	pub use frame_system::EnsureRoot;
+	use sp_runtime::{
+		traits::{self, IdentifyAccount, Verify},
+		OpaqueExtrinsic,
+	};
+	// pub use sp_runtime::testing::sr25519::Signature;
+
+	pub type EnsureRootOr<O> = EitherOfDiverse<EnsureRoot<AccountId>, O>;
+	pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
+	pub type Signature = sp_runtime::MultiSignature;
+
+
+
+}
+
 #[cfg(test)]
 mod tests {
 	use super::time::{DAYS, EPOCH_DURATION_IN_BLOCKS, HOURS, MILLISECS_PER_BLOCK, MINUTES, SECS_PER_BLOCK};
